@@ -99,7 +99,7 @@ public class Downloader {
             }
 
             if (doc != null) {
-                String data = HTMLExtractor.extractDocumentData(doc);
+                String data = HTMLExtractor.extractDocumentData(URL, doc);
                 Database.saveURL(URL, data);
 
                 Elements questions = doc.select("a");
