@@ -52,6 +52,4 @@ public class Database {
         String uri = URL.substring(URL.indexOf("/") + 1);
         return baseDir.getCanonicalPath() + File.separator + protocol + File.separator + domain + File.separator + "uri-" + uri.replaceAll("/", ".");
     }
-
-
 }

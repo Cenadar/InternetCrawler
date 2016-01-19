@@ -15,6 +15,7 @@ public class Downloader {
     private static final int tries = 5;
     private static final String site = "http://m.football.ua";
     //private static final String site = "http://www.independent.co.uk";
+    //private static final String site = "http://www.ukranews.com";
 
     public static void main(String[] args) throws IOException {
         File dir = new File(".");
@@ -73,12 +74,11 @@ public class Downloader {
         // check existance
         if (!Database.isURLDownloaded(URL)) {
             System.out.println("------ :  " + URL);
-
+            URL url = new URL(URL);
             Document doc = null;
+
             try {
                 Database.saveURL(URL, "");
-
-                URL url = new URL(URL);
 
                 try {
                     TimeUnit.MILLISECONDS.sleep(100);
@@ -93,17 +93,20 @@ public class Downloader {
                         doc = Jsoup.parse(html);
                 }
             } catch (IOException e) {
-                System.out.println("Page not exist " + URL);
+                //TODO: Uncomment this line
+                //System.out.println("Page not exist " + URL);
                 return;
             }
 
             if (doc != null) {
-                String data = HTMLExtractor.extractDocData(doc);
+                String data = HTMLExtractor.extractDocumentData(doc);
                 Database.saveURL(URL, data);
 
-                Elements questions = doc.select("a[href]");
+                Elements questions = doc.select("a");
                 for (Element link : questions) {
-                    processPage(link.attr("abs:href"));
+                    String ref = link.attr("href");
+                    String absoluteRef = new URL(url, ref).toString();
+                    processPage(absoluteRef);
                 }
             }
         }
