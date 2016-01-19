@@ -78,12 +78,23 @@ public class HTMLExtractor {
         return extractText(largest);
     }
 
-    public static String extractDocumentData(Document doc) {
+    private static String extractTitle(String url, Document doc) {
+        String title = doc.title();
+        if (url.startsWith("http://m.football.ua")) {
+            Elements headlines = doc.select("h1");
+            for (Element h: headlines) {
+                return h.text();
+            }
+        }
+        return title;
+    }
+
+    public static String extractDocumentData(String url, Document doc) {
         StringBuffer buffer = new StringBuffer();
         buffer.append("TITLE\n");
-        buffer.append(doc.title());
+        buffer.append(extractTitle(url, doc));
         buffer.append("\nTEXT\n");
-        buffer.append(extractText(doc.body()) + "\n");
+        buffer.append(extractText(doc.body()));
         return buffer.toString();
     }
 
@@ -107,7 +118,7 @@ public class HTMLExtractor {
         System.out.println("Processing...");
         System.out.println("URL=" + url);
 
-        String title = doc.title();
+        String title = extractTitle(strURL, doc);
         out.println("TITLE=" + title);
         System.out.println("TITLE=" + title);
 
