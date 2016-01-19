@@ -23,7 +23,9 @@ public class Database {
         File file = new File(Database.convertURLToFileName(URL));
         Path targetPath = file.toPath();
         file.mkdirs();
-        Files.copy(stream, targetPath, StandardCopyOption.REPLACE_EXISTING);
+        if (file.exists()) {
+            Files.copy(stream, targetPath, StandardCopyOption.REPLACE_EXISTING);
+        }
     }
 
     public static String getContentURL(String URL) throws IOException {

@@ -14,6 +14,7 @@ import java.util.concurrent.TimeUnit;
 public class Downloader {
     private static final int tries = 5;
     private static final String site = "http://m.football.ua";
+    //private static final String site = "http://www.independent.co.uk";
 
     public static void main(String[] args) throws IOException {
         File dir = new File(".");
@@ -64,7 +65,7 @@ public class Downloader {
             return;
         }
 
-        if (!URL.startsWith("http://m.football.ua")) {
+        if (!URL.startsWith(site)) {
             // url of other site -> do nothing
             return;
         }
@@ -91,13 +92,14 @@ public class Downloader {
                     if (!html.isEmpty())
                         doc = Jsoup.parse(html);
                 }
-            } catch (Exception e) {
-                e.printStackTrace();
+            } catch (IOException e) {
+                System.out.println("Page not exist " + URL);
                 return;
             }
 
             if (doc != null) {
-                Database.saveURL(URL, doc.outerHtml());
+                String data = HTMLExtractor.extractDocData(doc);
+                Database.saveURL(URL, data);
 
                 Elements questions = doc.select("a[href]");
                 for (Element link : questions) {
