@@ -1,8 +1,11 @@
 package me.lab.crawler;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 
 public class Database {
     private static File baseDir = new File("db");
@@ -12,9 +15,26 @@ public class Database {
     }
 
     public static void saveURL(String URL, String content) throws IOException {
-        File file = new File(convertURLToFileName(URL));
-        file.getParentFile().mkdirs();
-        new FileWriter(file).write(content);
+        InputStream stream = new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8));
+        saveURL(URL, stream);
+    }
+
+    public static void saveURL(String URL, InputStream stream) throws IOException {
+        File file = new File(Database.convertURLToFileName(URL));
+        Path targetPath = file.toPath();
+        file.mkdirs();
+        if (file.exists()) {
+            Files.copy(stream, targetPath, StandardCopyOption.REPLACE_EXISTING);
+        }
+    }
+
+    public static String getContentURL(String URL) throws IOException {
+        File file = new File(Database.convertURLToFileName(URL));
+        String content = "";
+        if (file.exists() && !file.isDirectory()) {
+            content = new String(Files.readAllBytes(file.toPath()));
+        }
+        return content;
     }
 
     private static String convertURLToFileName(String URL) throws IOException {
@@ -32,6 +52,4 @@ public class Database {
         String uri = URL.substring(URL.indexOf("/") + 1);
         return baseDir.getCanonicalPath() + File.separator + protocol + File.separator + domain + File.separator + "uri-" + uri.replaceAll("/", ".");
     }
-
-
 }

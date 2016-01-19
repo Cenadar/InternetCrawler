@@ -78,6 +78,15 @@ public class HTMLExtractor {
         return extractText(largest);
     }
 
+    public static String extractDocumentData(Document doc) {
+        StringBuffer buffer = new StringBuffer();
+        buffer.append("TITLE\n");
+        buffer.append(doc.title());
+        buffer.append("\nTEXT\n");
+        buffer.append(extractText(doc.body()) + "\n");
+        return buffer.toString();
+    }
+
 
     public static void main(String[] args) throws Exception {
         //http://football.ua/fiction/286945-gol-redkaja-prelest-futbola-chast-2.html

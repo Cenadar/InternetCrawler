@@ -1,6 +1,5 @@
 package me.lab.crawler;
 
-import org.jsoup.HttpStatusException;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -9,10 +8,14 @@ import org.jsoup.select.Elements;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Scanner;
+import java.util.concurrent.TimeUnit;
 
 public class Downloader {
     private static final int tries = 5;
     private static final String site = "http://m.football.ua";
+    //private static final String site = "http://www.independent.co.uk";
+    //private static final String site = "http://www.ukranews.com";
 
     public static void main(String[] args) throws IOException {
         File dir = new File(".");
@@ -63,7 +66,7 @@ public class Downloader {
             return;
         }
 
-        if (!URL.startsWith("http://m.football.ua")) {
+        if (!URL.startsWith(site)) {
             // url of other site -> do nothing
             return;
         }
@@ -71,27 +74,39 @@ public class Downloader {
         // check existance
         if (!Database.isURLDownloaded(URL)) {
             System.out.println("------ :  " + URL);
-
+            URL url = new URL(URL);
             Document doc = null;
+
             try {
                 Database.saveURL(URL, "");
-                for (int i = 0; doc == null && i < tries; ++i) {
-                    //doc = Jsoup.connect(URL).timeout(3000).get();
-                    String html = download(new URL(URL));
-                    doc = Jsoup.parse(html);
 
+                try {
+                    TimeUnit.MILLISECONDS.sleep(100);
+                } catch (InterruptedException e) {
+                    //Handle exception
                 }
-            } catch (Exception e) {
-                e.printStackTrace();
+
+                InputStream stream = url.openStream();
+                if (stream.available() != 0) {
+                    String html = new Scanner(stream,"UTF-8").useDelimiter("\\A").next();
+                    if (!html.isEmpty())
+                        doc = Jsoup.parse(html);
+                }
+            } catch (IOException e) {
+                //TODO: Uncomment this line
+                //System.out.println("Page not exist " + URL);
                 return;
             }
 
             if (doc != null) {
-                Database.saveURL(URL, doc.outerHtml());
+                String data = HTMLExtractor.extractDocumentData(doc);
+                Database.saveURL(URL, data);
 
-                Elements questions = doc.select("a[href]");
+                Elements questions = doc.select("a");
                 for (Element link : questions) {
-                    processPage(link.attr("abs:href"));
+                    String ref = link.attr("href");
+                    String absoluteRef = new URL(url, ref).toString();
+                    processPage(absoluteRef);
                 }
             }
         }
