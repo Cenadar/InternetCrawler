@@ -1,6 +1,5 @@
 package me.lab.crawler;
 
-import org.jsoup.HttpStatusException;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -9,6 +8,7 @@ import org.jsoup.select.Elements;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.concurrent.TimeUnit;
 
 public class Downloader {
     private static final int tries = 5;
@@ -75,11 +75,21 @@ public class Downloader {
             Document doc = null;
             try {
                 Database.saveURL(URL, "");
-                for (int i = 0; doc == null && i < tries; ++i) {
-                    //doc = Jsoup.connect(URL).timeout(3000).get();
-                    String html = download(new URL(URL));
-                    doc = Jsoup.parse(html);
 
+                URL url = new URL(URL);
+
+                try {
+                    TimeUnit.MILLISECONDS.sleep(100);
+                } catch (InterruptedException e) {
+                    //Handle exception
+                }
+
+                InputStream stream = url.openStream();
+                if (stream.available() != 0) {
+                    Database.saveURL(URL);
+                    String content = Database.getContentURL(URL);
+                    if (!content.isEmpty())
+                        doc = Jsoup.parse(content);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -87,8 +97,6 @@ public class Downloader {
             }
 
             if (doc != null) {
-                Database.saveURL(URL, doc.outerHtml());
-
                 Elements questions = doc.select("a[href]");
                 for (Element link : questions) {
                     processPage(link.attr("abs:href"));
