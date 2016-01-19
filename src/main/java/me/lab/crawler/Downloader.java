@@ -8,6 +8,7 @@ import org.jsoup.select.Elements;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 
 public class Downloader {
@@ -86,10 +87,9 @@ public class Downloader {
 
                 InputStream stream = url.openStream();
                 if (stream.available() != 0) {
-                    Database.saveURL(URL);
-                    String content = Database.getContentURL(URL);
-                    if (!content.isEmpty())
-                        doc = Jsoup.parse(content);
+                    String html = new Scanner(stream,"UTF-8").useDelimiter("\\A").next();
+                    if (!html.isEmpty())
+                        doc = Jsoup.parse(html);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -97,6 +97,8 @@ public class Downloader {
             }
 
             if (doc != null) {
+                Database.saveURL(URL, doc.outerHtml());
+
                 Elements questions = doc.select("a[href]");
                 for (Element link : questions) {
                     processPage(link.attr("abs:href"));

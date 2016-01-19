@@ -1,9 +1,8 @@
 package me.lab.crawler;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -16,17 +15,15 @@ public class Database {
     }
 
     public static void saveURL(String URL, String content) throws IOException {
-        File file = new File(convertURLToFileName(URL));
-        file.getParentFile().mkdirs();
-        new FileWriter(file).write(content);
+        InputStream stream = new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8));
+        saveURL(URL, stream);
     }
 
-    public static void saveURL(String URL) throws IOException {
+    public static void saveURL(String URL, InputStream stream) throws IOException {
         File file = new File(Database.convertURLToFileName(URL));
         Path targetPath = file.toPath();
         file.mkdirs();
-        URL url = new URL(URL);
-        Files.copy(url.openStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);
+        Files.copy(stream, targetPath, StandardCopyOption.REPLACE_EXISTING);
     }
 
     public static String getContentURL(String URL) throws IOException {
